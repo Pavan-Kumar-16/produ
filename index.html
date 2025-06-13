@@ -12,9 +12,10 @@
     posthog.init('phc_w3begGmT4wIwLBViukySb4oY1vE3qxthU52tpYOFcpK', {
         api_host: 'https://us.i.posthog.com',
         defaults: '2025-05-24',
-        person_profiles: 'identified_only', // or 'always' to create profiles for anonymous users as well
-    })
-</script>
+        person_profiles: 'identified_only',
+    });
+  </script>
+
   <style>
     body.blue-theme {
       background-color: #e0f0ff;
@@ -23,41 +24,6 @@
       background-color: #f0e0ff;
     }
   </style>
-  <script>
-  // Wait for PostHog to be fully loaded
-  window.posthog.onFeatureFlags(function () {
-    const variant = posthog.getFeatureFlag('dashboard-color-variant');
-    console.log('📊 Feature flag variant loaded:', variant); // Debug: log the variant
-
-    if (variant === 'purple') {
-      document.body.classList.add('purple-theme');
-      console.log('🎨 Applied purple-theme');
-    } else {
-      document.body.classList.add('blue-theme');
-      console.log('🎨 Applied blue-theme');
-    }
-
-    // Track which variant was shown
-    posthog.capture('variant_displayed', { variant });
-  });
-
-  function showReminder() {
-    console.log('🔔 Reminder button clicked');
-    posthog.capture('reminder_clicked', { section: 'Medication' });
-    alert("Time to take your 2:00 PM medication: Vitamin D capsule.");
-  }
-
-  function playGame() {
-    console.log('🎮 Game button clicked');
-    posthog.capture('game_started', { game: 'Memory Game' });
-    alert("Launching memory game...");
-  }
-
-  // Track page view
-  console.log('📄 Page view tracked');
-  posthog.capture('page_viewed', { page: 'Home' });
-</script>
-
 </head>
 <body>
   <header>
@@ -70,6 +36,7 @@
       <li><a href="#reminders">Reminders</a></li>
       <li><a href="#games">Games</a></li>
       <li><a href="#stats">Health Stats</a></li>
+      <li><a href="#appointment">Appointments</a></li>
     </ul>
   </nav>
 
@@ -77,7 +44,7 @@
     <section id="reminders">
       <h2>💊 Medication Reminders</h2>
       <p>Click below to get your next medicine reminder.</p>
-      <button onclick="showReminder()">Show Reminder</button>
+      <button id="reminderBtn" onclick="showReminder()">Loading...</button>
     </section>
 
     <section id="games">
@@ -95,6 +62,18 @@
         <li>Steps: 6,200 today</li>
       </ul>
     </section>
+
+    <section id="appointment">
+      <h2>📅 Appointment Scheduler</h2>
+      <p>Select a time slot for your doctor’s visit:</p>
+      <select id="appointmentSlot">
+        <option value="9AM">9:00 AM</option>
+        <option value="11AM">11:00 AM</option>
+        <option value="2PM">2:00 PM</option>
+        <option value="4PM">4:00 PM</option>
+      </select>
+      <button onclick="bookAppointment()">Book Appointment</button>
+    </section>
   </main>
 
   <footer>
@@ -103,11 +82,34 @@
 
   <!-- ✅ JavaScript logic + tracking -->
   <script>
-    // Track initial page view
-    posthog.capture('page_viewed', { page: 'Home' });
+    // A/B Test and Theme Variant Application
+    window.posthog.onFeatureFlags(function () {
+      const themeVariant = posthog.getFeatureFlag('dashboard-color-variant');
+      const buttonVariant = posthog.getFeatureFlag('reminder-button-text');
+      const reminderBtn = document.getElementById('reminderBtn');
+
+      // Theme color logic
+      if (themeVariant === 'purple') {
+        document.body.classList.add('purple-theme');
+      } else {
+        document.body.classList.add('blue-theme');
+      }
+
+      posthog.capture('variant_displayed', { theme: themeVariant });
+
+      // A/B test: reminder button text
+      if (buttonVariant === 'get') {
+        reminderBtn.textContent = 'Get Reminder';
+      } else {
+        reminderBtn.textContent = 'Show Reminder';
+      }
+
+      posthog.capture('reminder_button_variant', { variant: buttonVariant });
+    });
 
     function showReminder() {
-      posthog.capture('reminder_clicked', { section: 'Medication' });
+      const buttonText = document.getElementById('reminderBtn').textContent;
+      posthog.capture('reminder_clicked', { button_text: buttonText });
       alert("Time to take your 2:00 PM medication: Vitamin D capsule.");
     }
 
@@ -115,6 +117,15 @@
       posthog.capture('game_started', { game: 'Memory Game' });
       alert("Launching memory game...");
     }
+
+    function bookAppointment() {
+      const slot = document.getElementById("appointmentSlot").value;
+      posthog.capture('appointment_booked', { slot });
+      alert(`Appointment booked at ${slot}.`);
+    }
+
+    // Initial page view
+    posthog.capture('page_viewed', { page: 'Home' });
   </script>
 </body>
 </html>
