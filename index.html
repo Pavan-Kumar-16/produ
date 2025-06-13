@@ -15,6 +15,41 @@
         person_profiles: 'identified_only', // or 'always' to create profiles for anonymous users as well
     })
 </script>
+  <style>
+    body.blue-theme {
+      background-color: #e0f0ff;
+    }
+    body.purple-theme {
+      background-color: #f0e0ff;
+    }
+  </style>
+  <script>
+    // Wait for PostHog to be fully loaded
+    window.posthog.onFeatureFlags(function () {
+      const variant = posthog.getFeatureFlag('dashboard-color-variant');
+      if (variant === 'purple') {
+        document.body.classList.add('purple-theme');
+      } else {
+        document.body.classList.add('blue-theme');
+      }
+
+      // Track variant exposure
+      posthog.capture('variant_displayed', { variant });
+    });
+
+    function showReminder() {
+      posthog.capture('reminder_clicked', { section: 'Medication' });
+      alert("Time to take your 2:00 PM medication: Vitamin D capsule.");
+    }
+
+    function playGame() {
+      posthog.capture('game_started', { game: 'Memory Game' });
+      alert("Launching memory game...");
+    }
+
+    // Track page view
+    posthog.capture('page_viewed', { page: 'Home' });
+  </script>
 </head>
 <body>
   <header>
