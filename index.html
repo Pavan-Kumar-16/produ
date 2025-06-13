@@ -24,32 +24,40 @@
     }
   </style>
   <script>
-    // Wait for PostHog to be fully loaded
-    window.posthog.onFeatureFlags(function () {
-      const variant = posthog.getFeatureFlag('dashboard-color-variant');
-      if (variant === 'purple') {
-        document.body.classList.add('purple-theme');
-      } else {
-        document.body.classList.add('blue-theme');
-      }
+  // Wait for PostHog to be fully loaded
+  window.posthog.onFeatureFlags(function () {
+    const variant = posthog.getFeatureFlag('dashboard-color-variant');
+    console.log('📊 Feature flag variant loaded:', variant); // Debug: log the variant
 
-      // Track variant exposure
-      posthog.capture('variant_displayed', { variant });
-    });
-
-    function showReminder() {
-      posthog.capture('reminder_clicked', { section: 'Medication' });
-      alert("Time to take your 2:00 PM medication: Vitamin D capsule.");
+    if (variant === 'purple') {
+      document.body.classList.add('purple-theme');
+      console.log('🎨 Applied purple-theme');
+    } else {
+      document.body.classList.add('blue-theme');
+      console.log('🎨 Applied blue-theme');
     }
 
-    function playGame() {
-      posthog.capture('game_started', { game: 'Memory Game' });
-      alert("Launching memory game...");
-    }
+    // Track which variant was shown
+    posthog.capture('variant_displayed', { variant });
+  });
 
-    // Track page view
-    posthog.capture('page_viewed', { page: 'Home' });
-  </script>
+  function showReminder() {
+    console.log('🔔 Reminder button clicked');
+    posthog.capture('reminder_clicked', { section: 'Medication' });
+    alert("Time to take your 2:00 PM medication: Vitamin D capsule.");
+  }
+
+  function playGame() {
+    console.log('🎮 Game button clicked');
+    posthog.capture('game_started', { game: 'Memory Game' });
+    alert("Launching memory game...");
+  }
+
+  // Track page view
+  console.log('📄 Page view tracked');
+  posthog.capture('page_viewed', { page: 'Home' });
+</script>
+
 </head>
 <body>
   <header>
